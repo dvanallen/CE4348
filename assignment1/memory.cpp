@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
         std::cout << "Error: " << e.what() << std::endl;
     }
     
-    /*for(int i = 0; i<10; i++)
+    for(int i = 0; i<10; i++)
     {
         std::cout << mem[i] << std::endl;
     }
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     for(int i = 1000; i<1010; i++)
     {
         std::cout << mem[i] << std::endl;
-    }*/
+    }
     
     return 0;
 }

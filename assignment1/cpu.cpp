@@ -6,14 +6,19 @@
 *	Description: 		This program emulates a CPU by providing an instruction set that is used to manipulate data stored in memory.cpp
 **/
 
-#include "memory.h"
 #include <cstdlib>
+#include <iostream>
 
 //Registers:
-int PC = IR = AC = X = Y = 0;
-int SP = 999;
+int PC = 0, IR = 0, AC = 0, X = 0, Y = 0, SP = 999;
 
+int getFromAddress(int addr) {
+    return 0;
+}
 
+int putToAddress(int address, int value) {
+    return 0;
+}
 //Instruction set: Instructions return 0 if they are executed successfully and 1 if they fail.
 
 //1
@@ -28,7 +33,7 @@ bool loadValue(int value) {
 bool loadAddr(int addr) {
 	if(!addr)
 		return false;
-	int value = memory.load(addr)
+	int value = getFromAddress(addr);
 	if(!value)
 		return false;
 	AC = value;
@@ -39,7 +44,7 @@ bool loadAddr(int addr) {
 bool storeAddr(int addr) {
 	if(!addr)
 		return false;
-	memory.store(addr, AC);
+	putToAddress(addr, AC);
 	return true;
 }
 
@@ -82,7 +87,7 @@ bool get() {
 }
 
 //9
-bool put() {
+/*bool put() {
 	
 }
 
@@ -175,7 +180,7 @@ bool iRet() {
 //50
 void end() {
 
-}
+}*/
 
 
 
@@ -194,8 +199,35 @@ void end() {
 
 
 
-int main {
-	//TODO: Read values from memory and execute them using the appropriate instructions
-	
+int main(int argc, char* argv[]) {
+	int pipeIn[2], pipeOut[2];
+
+    if(pipe(pipeIn) < 0 || pipe(pipeOut) < 0)
+    {
+        std::cout << "Error: Pipe failed." << std::endl;
+        return 0;
+    }
+
+	switch(fork())
+    {
+        case -1: 
+            std::cout << "Error: Fork failed." << std::endl;
+            return 0;
+            
+        case 0:
+            dup2(pipeIn[0], STDIN_FILENO);
+            dup2(pipeOut[1], STDOUT_FILENO);
+            close(pipeIn[0]);
+            close(pipeIn[1]);
+            close(pipeOut[0]);
+            close(pipeOut[1]);
+            execlp("memory", "memory", argv, (char *)0);
+            //If we make it through
+            std::cout << "Exec failed." << std::endl;
+            return 0;
+
+        default: break;
+    }
+
 	return 0;
 }
