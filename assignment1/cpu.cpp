@@ -1,9 +1,9 @@
 /**
-* cpu.cpp
-*	Authors:			Daniel Van Allen, Ben Privat, Desmond Lee
-*	Class:				CE4348.001 - OS Concepts
-*	Date:				2013-9-23
-*	Description: 		This program emulates a CPU by providing an instruction set that is used to manipulate data stored in memory.cpp
+*	cpu.cpp
+*	Authors:		Daniel Van Allen, Ben Privat, Desmond Lee
+*	Class:			CE4348.001 - OS Concepts
+*	Date:			2013-9-23
+*	Description: 	This program emulates a CPU by providing an instruction set that is used to manipulate data stored in memory.cpp
 **/
 
 #include <cstdlib>
@@ -11,71 +11,61 @@
 
 //Registers:
 int PC = 0, IR = 0, AC = 0, X = 0, Y = 0, SP = 999;
+//Pipes:
+int pipeIn[2], pipeOut[2];
 
+//Memory I/O
 int getFromAddress(int addr) {
-    return 0;
+	std::cout << addr << std::endl;
+	int value = 0;
+	std::cin >> value;
+    return value;
 }
 
-int putToAddress(int address, int value) {
-    return 0;
+void putToAddress(int addr, int value) {
+    std::cout << addr << value << std::endl;
 }
-//Instruction set: Instructions return 0 if they are executed successfully and 1 if they fail.
 
+//Instruction set: Instructions return true if they are executed successfully and false if they fail.
 //1
 bool loadValue(int value) {
-	if(!value)
-		return false;
 	AC = value;
 	return true;
 }
 
 //2
 bool loadAddr(int addr) {
-	if(!addr)
-		return false;
 	int value = getFromAddress(addr);
-	if(!value)
-		return false;
 	AC = value;
 	return true;
 }
 
 //3
 bool storeAddr(int addr) {
-	if(!addr)
-		return false;
 	putToAddress(addr, AC);
 	return true;
 }
 
 //4
 bool addX() {
-	if(!X)
-		return false;
 	AC += X;
 	return true;
 }
 
 //5
 bool addY() {
-	if(!Y)
-		return false;
 	AC += Y;
 	return true;
 }
 
 //6
 bool subX() {
-	if(!X)
-		return false;
 	AC -= X;
 	return true;
 }
 
 //7
 bool subY() {
-	if(!Y)
-		return false;
 	AC -= Y;
 	return true;
 }
@@ -182,26 +172,7 @@ void end() {
 
 }*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int main(int argc, char* argv[]) {
-	int pipeIn[2], pipeOut[2];
-
     if(pipe(pipeIn) < 0 || pipe(pipeOut) < 0)
     {
         std::cout << "Error: Pipe failed." << std::endl;
