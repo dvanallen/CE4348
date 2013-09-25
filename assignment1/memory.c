@@ -28,6 +28,9 @@ int main(int argc, const char* argv[]) {
     int interruptLength;
     int continueRead = 1;
 
+    setbuf(stdout, NULL);  // because buffers suck.
+    setbuf(stdin, NULL);
+
     memset(memory, -1, sizeof(memory));
 
     if (argc != 2 && argc != 3) {
@@ -60,7 +63,7 @@ int main(int argc, const char* argv[]) {
 		(address >= programLength && address < INTLOC) || 
 		address >= INTLOC + interruptLength ||
 		address < 0) {
-			fprintf(stderr, "ERROR!!!!!!");
+			fprintf(stderr, "out of range error!!!!!!");
 			return -1;
 		}
 
@@ -75,7 +78,7 @@ int main(int argc, const char* argv[]) {
     			memory[address] = data;
 	    		break;
 	    	default:
-	    		fprintf(stderr, "ERROR!!!!");
+	    		fprintf(stderr, "unrecognized command error!!!!");
 	    		return -1;
     	}
     }
