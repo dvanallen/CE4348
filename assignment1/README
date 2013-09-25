@@ -1,0 +1,20 @@
+how the memory program works:
+
+starting:
+./memory program.code interrupt.code ---> reads the argument files into the array
+
+this starts an input loop:
+command address [data]
+
+command 0 is read
+command 1 is write, takes additional data argument
+command -1 is exit
+
+example i/o:
+0 10 --> 19
+1 10 1000
+0 10 --> 1000
+-1
+
+can also be given as:
+0 10 1 10 0 10 -1 --> 19\n1000

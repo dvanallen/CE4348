@@ -2,8 +2,11 @@
  * memory.c
  **/
 
- #include <stdio.h>
- #include <string.h> //memset
+#include <stdio.h>
+#include <string.h> //memset
+
+#define MEMSIZE 2000
+#define INTLOC 1000
 
 int readMemoryFile(const char* fileName, int* array, int startIndex) {
     FILE *memoryFile = fopen(fileName, "r");
@@ -11,7 +14,7 @@ int readMemoryFile(const char* fileName, int* array, int startIndex) {
     int memsize = 0;
     while (!feof(memoryFile)) {
     	int command;
-    	fgets(buff, 1000, memoryFile); // read line to buffer
+    	fgets(buff, INTLOC, memoryFile); // read line to buffer
     	sscanf(buff, "%d", &command); // read int from buffer
     	array[startIndex + memsize++] = command; // store in array pointer
     }
@@ -20,9 +23,10 @@ int readMemoryFile(const char* fileName, int* array, int startIndex) {
 }
 
 int main(int argc, const char* argv[]) {
-    int memory[2000];
+    int memory[MEMSIZE];
     int programLength;
     int interruptLength;
+    int continueRead = 1;
 
     memset(memory, -1, sizeof(memory));
 
@@ -33,7 +37,47 @@ int main(int argc, const char* argv[]) {
 
     programLength = readMemoryFile(argv[1], memory, 0); // load the mandatory program file
     if (argc == 3) { // if we have an interrupt file, load it too.
-    	interruptLength = readMemoryFile(argv[2], memory, 1000);
+    	interruptLength = readMemoryFile(argv[2], memory, INTLOC);
+    }
+
+
+    while (continueRead) {
+    	int command;
+    	int address;
+    	int data;
+    	scanf("%d", &command); // read command
+    	//printf("got command %d\n", command);
+
+
+    	if (command == -1) {
+    		continueRead = 0;
+    		break;
+    	}
+
+	    scanf("%d", &address);
+    	//printf("got address %d\n", address);
+		if (address >= MEMSIZE || 
+		(address >= programLength && address < INTLOC) || 
+		address >= INTLOC + interruptLength ||
+		address < 0) {
+			fprintf(stderr, "ERROR!!!!!!");
+			return -1;
+		}
+
+    	switch(command) {
+    		case 0:
+	    		data = memory[address];
+	    		printf("%d\n", data);
+	    		break;
+	    	case 1:
+	    		scanf("%d", &data); //read data
+    			//printf("got data %d\n", data);
+    			memory[address] = data;
+	    		break;
+	    	default:
+	    		fprintf(stderr, "ERROR!!!!");
+	    		return -1;
+    	}
     }
     return 0;
 }
