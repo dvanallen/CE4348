@@ -6,6 +6,7 @@
 *	Description:	This program emulates a CPU by providing an instruction set that is used to manipulate data stored in memory.cpp
 **/
 
+#include <unistd.h>
 #include <cstdlib>
 #include <iostream>
 

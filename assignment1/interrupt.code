@@ -1,4 +1,25 @@
+23    // Push
+12    // CopyFromX
+23    // Push
+13    // CopyFromY
+23    // Push
+2     // Load 24 
+24
+10    // CopyToX
+19    // IncX
+12    // CopyFromX
+3     // Store 24
+24
+9     // Put 1 (as integer)
+1
+1     // Load newline
 10
-11
-12
-13
+9     // Put 2 (as char)
+2
+24    // Pop
+11    // CopyToY
+24    // Pop
+10    // CopyToX
+24    // Pop
+26    // IRet 
+0     // Data
