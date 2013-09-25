@@ -193,13 +193,16 @@ int main(int argc, char* argv[]) {
             close(pipeIn[1]);
             close(pipeOut[0]);
             close(pipeOut[1]);
-            execlp("memory", "memory", argv, (char *)0);
+            execl("memory", "memory", argv, (char *)0);
             //If we make it through
             std::cout << "Exec failed." << std::endl;
             return 0;
 
         default: break;
     }
+
+    close(pipe1[0]); // close unneeded pipes
+    close(pipe2[1]);
 
 	return 0;
 }
