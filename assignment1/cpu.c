@@ -129,7 +129,7 @@ void handleInstruction(int inst, int *keepGoing, int *incrementPC) {
             break;
         case 8:
             // get random int from 1 to 100
-            AC = stdlib::rand() % 100 + 1;
+            AC = rand() % 100 + 1;
             break;
         case 9:
             PC = PC + 1;
