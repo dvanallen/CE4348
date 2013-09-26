@@ -15,6 +15,8 @@ char buff[BUFSIZ]; // read buffer
 
 int getFromAddress(int);
 void putToAddress(int, int);
+void pushStack(int);
+int popStack();
 
 int main(int argc, char* argv[]) {
     if(pipe(pipe1) < 0 || pipe(pipe2) < 0)
@@ -81,4 +83,101 @@ int getFromAddress(int addr) {
 void putToAddress(int addr, int value) {
     fprintf(to_child, "1 %d %d\n", addr, value);
     return;
+}
+
+void handleInstruction(int inst) {
+    switch(inst) {
+        int value;
+        int address;
+        case 1: // load value into AC
+            PC = PC + 1;
+            AC = getFromAddress(PC);
+            break;
+        case 2: // load address value into AC
+            PC = PC + 1;
+            address = getFromAddress(PC);
+            AC = getFromAddress(address);
+            break;
+        case 3: // store value in AC to address
+            PC = PC + 1;
+            address = getFromAddress(PC);
+            putToAddress(address, AC);
+            break;
+        case 4: // add value in X to AC
+            AC += X;
+            break;
+        case 5: // add value in Y to AC
+            AC += Y;
+            break;
+        case 6: 
+            AC -= X;
+            break;
+        case 7:
+            AC -= Y;
+            break;
+        case 8:
+            // get random int from 1 to 100
+            AC = 10; // implement later.
+            break;
+        case 9:
+            PC = PC + 1;
+            value = getFromAddress(PC);
+            if (value == 1) {
+                printf("%d", AC);
+            }
+            else if (value == 2) {
+                printf("%c", (char) AC);
+            }
+            break;
+        case 10:
+            X = AC;
+            break;
+        case 11:
+            Y = AC;
+            break;
+        case 12:
+            AC = X;
+            break;
+        case 13:
+            AC = Y;
+            break;
+        case 14:
+            PC+=1;
+            address = getFromAddress(PC);
+            PC = address;
+            break;
+        case 15:
+            PC+=1;
+            address = getFromAddress(PC);
+            if (AC == 0) {
+                PC = address;
+            }
+            break;
+        case 16:
+            PC+=1;
+            address = getFromAddress(PC);
+            if (AC != 0) {
+                PC = address;
+            }
+            break;
+        case 17:
+            PC+=1;
+            address = getFromAddress(PC);
+            pushStack(PC+1);
+            PC = address;
+            break;
+        case 18:
+            address = popStack();
+            PC = address;
+            break;
+
+    }
+}
+
+int popStack() {
+    return getFromAddress(SP++);
+}
+
+void pushStack(int val) {
+    putToAddress(val, SP--);
 }
