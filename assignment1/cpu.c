@@ -3,8 +3,11 @@
 #include <string.h>
 #include <errno.h>
 
+#define SYSTEM 1000
+#define USER 0
+
 //Registers:
-int PC = 0, IR = 0, AC = 0, X = 0, Y = 0, SP = 999;
+int PC = 0, IR = 0, AC = 0, X = 0, Y = 0, SP = 999, MODE = USER;
 //Pipes:
 int pipe1[2], pipe2[2];
 
@@ -17,6 +20,7 @@ int getFromAddress(int);
 void putToAddress(int, int);
 void pushStack(int);
 int popStack();
+void handleInstruction(int, int*, int*);
 
 int main(int argc, char* argv[]) {
     if(pipe(pipe1) < 0 || pipe(pipe2) < 0)
@@ -59,6 +63,22 @@ int main(int argc, char* argv[]) {
 
     memset(buff, 0, sizeof(buff)); // clear buffer
 
+    int keepGoing = 1;
+    int incrementPC = 1;
+    while(keepGoing) {
+        //printf("reading from PC %d\n", PC);
+        IR = getFromAddress(PC);
+        //printf("got instruction %d\n", IR);
+        handleInstruction(IR, &keepGoing, &incrementPC);
+        if (incrementPC) {
+            PC++;
+        }
+        else {
+            incrementPC = 1;
+        }
+    }
+
+    /**
     printf("starting cpu...\n");
     int value = getFromAddress(10);
     printf("value at addr 10 is: %d\n", value);
@@ -66,6 +86,7 @@ int main(int argc, char* argv[]) {
     putToAddress(10, 1000);
     value = getFromAddress(10);
     printf("value at addr 10 is now: %d\n", value);
+    **/
 
 	return 0;
 }
@@ -74,18 +95,18 @@ int main(int argc, char* argv[]) {
 int getFromAddress(int addr) {
     int value = 0;
     //printf("sending.\n");
-    fprintf(to_child, "0 %d\n", addr);
+    fprintf(to_child, "0 %d\n", MODE + addr);
     //printf("waiting.\n");
     fscanf(from_child, "%d", &value);
     return value;
 }
 
 void putToAddress(int addr, int value) {
-    fprintf(to_child, "1 %d %d\n", addr, value);
+    fprintf(to_child, "1 %d %d\n", MODE + addr, value);
     return;
 }
 
-void handleInstruction(int inst) {
+void handleInstruction(int inst, int *keepGoing, int *incrementPC) {
     switch(inst) {
         int value;
         int address;
@@ -145,12 +166,14 @@ void handleInstruction(int inst) {
             PC+=1;
             address = getFromAddress(PC);
             PC = address;
+            *incrementPC = 0;
             break;
         case 15:
             PC+=1;
             address = getFromAddress(PC);
             if (AC == 0) {
                 PC = address;
+                *incrementPC = 0;
             }
             break;
         case 16:
@@ -158,6 +181,7 @@ void handleInstruction(int inst) {
             address = getFromAddress(PC);
             if (AC != 0) {
                 PC = address;
+                *incrementPC = 0;
             }
             break;
         case 17:
@@ -165,19 +189,60 @@ void handleInstruction(int inst) {
             address = getFromAddress(PC);
             pushStack(PC+1);
             PC = address;
+            *incrementPC = 0;
             break;
         case 18:
             address = popStack();
             PC = address;
+            *incrementPC = 0;
             break;
-
+        case 19:
+            X++;
+            break;
+        case 20:
+            X--;
+            break;
+        case 21:
+            address = getFromAddress(++PC);
+            AC = getFromAddress(address + X);
+            break;
+        case 22:
+            address = getFromAddress(++PC);
+            AC = getFromAddress(address + Y);
+            break;
+        case 23:
+            pushStack(AC);
+            break;
+        case 24:
+            AC = popStack();
+            break;
+        case 25:
+            pushStack(PC + 1);
+            MODE = SYSTEM;
+            PC = 0;
+            *incrementPC = 0;
+            break;
+        case 26:
+            PC = popStack();
+            *incrementPC = 0;
+            MODE = USER;
+            break;
+        case 50:
+            *keepGoing = 0;
+            break;
+            // end exec;
     }
 }
 
 int popStack() {
-    return getFromAddress(SP++);
+    int value = 0;
+    fprintf(to_child, "0 %d\n", ++SP);
+    fscanf(from_child, "%d", &value);
+    //printf("POPED %d FROM STACK. SP: %d\n", value, SP);
+    return value;
 }
 
 void pushStack(int val) {
-    putToAddress(val, SP--);
+    fprintf(to_child, "1 %d %d\n", SP--, val);
+    //printf("PUSHED %d TO STACK. SP: %d\n", val, SP);
 }

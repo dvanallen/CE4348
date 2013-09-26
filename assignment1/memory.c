@@ -60,9 +60,9 @@ int main(int argc, const char* argv[]) {
 	    scanf("%d", &address);
     	//printf("got address %d\n", address);
 		if (address >= MEMSIZE || 
-		(address >= programLength && address < INTLOC) || 
 		address >= INTLOC + interruptLength ||
 		address < 0) {
+			fprintf(stderr, "memory[%d] = ERR\n", address);
 			fprintf(stderr, "out of range error!!!!!!");
 			return -1;
 		}
@@ -70,12 +70,14 @@ int main(int argc, const char* argv[]) {
     	switch(command) {
     		case 0:
 	    		data = memory[address];
+    			//fprintf(stderr, "memory[%d] = %d\n", address, data);
 	    		printf("%d\n", data);
 	    		break;
 	    	case 1:
 	    		scanf("%d", &data); //read data
     			//printf("got data %d\n", data);
     			memory[address] = data;
+    			//fprintf(stderr, "setting memory[%d] = %d\n", address, data);
 	    		break;
 	    	default:
 	    		fprintf(stderr, "unrecognized command error!!!!");
