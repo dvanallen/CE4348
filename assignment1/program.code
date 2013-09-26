@@ -1,22 +1,16 @@
-8   // Get random number 1-100
-10  // CopyToX
-9   // Put 1 (as int) 
-1
-1   // Load newline 
-10
-9   // Put 2 (as char) 
-2   // 
-1   // Load A 
-65
-9   // Put 2 (as char) 
-2   // 
-1   // Load newline 
-10
-9   // Put 2 (as char) 
-2   // 
-20  // DecX
-12  // CopyFromX
-25  // Int 
-16  // JumpIfNotEqual 8 
-8    
-50  // End 
+1   // Load 72=H
+      72
+       9   // Put 2
+       2
+       1   // Load 73=I
+      73
+       9   // Put 2
+       2
+      17  // Call 11
+      11
+      50  // End 
+       1   // Load 10=newline
+      10 
+       9   // Put 2
+       2
+      18  // Return

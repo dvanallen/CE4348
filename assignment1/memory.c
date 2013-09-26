@@ -49,8 +49,6 @@ int main(int argc, const char* argv[]) {
     	int address;
     	int data;
     	scanf("%d", &command); // read command
-    	//printf("got command %d\n", command);
-
 
     	if (command == -1) {
     		continueRead = 0;
@@ -58,12 +56,10 @@ int main(int argc, const char* argv[]) {
     	}
 
 	    scanf("%d", &address);
-    	//printf("got address %d\n", address);
 		if (address >= MEMSIZE || 
 		address >= INTLOC + interruptLength ||
 		address < 0) {
 			fprintf(stderr, "memory[%d] = ERR\n", address);
-			fprintf(stderr, "out of range error!!!!!!");
 			return -1;
 		}
 
@@ -75,7 +71,6 @@ int main(int argc, const char* argv[]) {
 	    		break;
 	    	case 1:
 	    		scanf("%d", &data); //read data
-    			//printf("got data %d\n", data);
     			memory[address] = data;
     			//fprintf(stderr, "setting memory[%d] = %d\n", address, data);
 	    		break;

@@ -78,16 +78,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    /**
-    printf("starting cpu...\n");
-    int value = getFromAddress(10);
-    printf("value at addr 10 is: %d\n", value);
-    printf("Now writing 1000 to address 10.\n");
-    putToAddress(10, 1000);
-    value = getFromAddress(10);
-    printf("value at addr 10 is now: %d\n", value);
-    **/
-
 	return 0;
 }
 
