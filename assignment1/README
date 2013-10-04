@@ -1,7 +1,7 @@
 how the memory program works:
 
 starting:
-./memory program.code interrupt.code ---> reads the argument files into the array
+./cpu program.code interrupt.code ---> reads the argument files into the array
 
 this starts an input loop:
 command address [data]

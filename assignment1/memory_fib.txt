@@ -1,0 +1,20 @@
+1
+0	// load 0 to AC
+10	// put AC to X		(X = 0)
+1
+1	// put text1 to AC (IMPORTANT)
+11	// copy AC to Y		(Y = 1)
+1	// begin for-loop. check loop condition
+23	// put 23 to AC
+6	// subtract X from AC
+15 	// break if X == 0
+17	// addr for end-of-for-loop (IMPORTANT)
+12	// copy from X to AC
+9
+1	// print AC
+19	// X++
+14 
+6	// repeat, jump back to begin for-loop (IMPORTANT)
+50	// end program
+H
+I
