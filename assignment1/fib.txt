@@ -5,7 +5,7 @@
 1	// load 1 to AC
 11	// copy AC to Y		(Y = 1)
 1	// begin for-loop. check loop condition
-1836311903	// put 34 to AC
+1836311903	// put target fib # into AC
 7	// subtract Y from AC
 15 	// break if AC == 0
 23	// addr for end-of-for-loop (IMPORTANT)
@@ -19,13 +19,13 @@
 24	// Retrive AC from stack (Next fib #)
 11	// Y = AC
 1
-32
+32	// print space between numbers
 9
 2
 14 
 6	// repeat, jump back to begin for-loop (IMPORTANT)
 1
-10
+10	//finish with a newline
 9
 2
 50	// end program
