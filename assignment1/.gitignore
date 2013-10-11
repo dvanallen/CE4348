@@ -3,3 +3,4 @@
 cpu
 memory
 *.o
+*.swp
