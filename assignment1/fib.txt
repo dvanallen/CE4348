@@ -5,7 +5,7 @@
 1	// load 1 to AC
 11	// copy AC to Y		(Y = 1)
 1	// begin for-loop. check loop condition
-34	// put 34 to AC
+39088169	// put 34 to AC
 6	// subtract X from AC
 15 	// break if AC == 0
 23	// addr for end-of-for-loop (IMPORTANT)
