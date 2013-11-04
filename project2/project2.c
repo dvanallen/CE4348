@@ -5,9 +5,34 @@
  */
 
 #include <stdio.h>
+#include <semaphore.h>
 #include <pthread.h>
 
 #define MAX_CUSTOMERS 100
+
+int ticket[MAX_CUSTOMERS];
+int cust_count, ticket_count;
+
+sem_t desk_line, desk, desk_cust_ready, agent_line, agent[2], agent_cust_ready[2], announcer[MAX_CUSTOMERS], mutex1, mutex2, mutex3, mutex4, exam[MAX_CUST_NO], finished[MAX_CUST_NO];
+
+sem_init(&desk_line, 0, 10);
+sem_init(&desk, 0, 1);
+sem_init(&desk_cust_ready, 0, 0);
+sem_init(&agent_line, 0, 10);
+sem_init(&agent[0], 0, 1);
+sem_init(&agent[1], 0, 1);
+sem_init(&agent_cust_ready[0], 0, 0);
+sem_init(&agent_cust_ready[1], 0, 0);
+sem_init(&mutex1, 0, 1);
+sem_init(&mutex2, 0, 1);
+sem_init(&mutex3, 0, 1);
+sem_init(&mutex4, 0, 1);
+int y;
+for(y = 0; y < MAX_CUSTOMERS; y++) {
+	sem_init(&announcer[y], 0, 1);
+	sem_init(&exam[y], 0, 1);
+	sem_init(&finished[y], 0, 0);
+}
 
 void *customer(void *arg) {
 	int id = (int)arg;
