@@ -35,11 +35,11 @@ int main() {
 	int x;	
 	
 	for(x = 0; x < 2; x++) {
-                int agentErr = pthread_create(&agentThreads[x], NULL, &agent, (void*)x);
-                        if(agentErr != 0) {
-                                printf("Error creating agent thread #%d\n", x);
-                                pthread_exit(NULL);
-                        }
+        	int agentErr = pthread_create(&agentThreads[x], NULL, &agent, (void*)x);
+                if(agentErr != 0) {
+                	printf("Error creating agent thread #%d\n", x);
+                        pthread_exit(NULL);
+                }
         }
 
         int deskErr = pthread_create(&iDeskThread, NULL, &iDesk, NULL);
