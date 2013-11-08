@@ -18,21 +18,23 @@ sem_t mutex1, mutex2, mutex3, mutex4;
 sem_t agent[2], agent_cust_ready[2], announcer[MAX_CUSTOMERS], exam[MAX_CUSTOMERS], finished[MAX_CUSTOMERS];
 
 /* Define actions taken by each thread actor */
-void *customerThread(void *arg) {
-	int id = (int)arg;
+void* customerThread(void *arg) {
+	long id = (long)arg;
 	printf("Customer %d Created\n", id);
+
+	pthread_exit(NULL);
 }
 
-void *iDeskThread() {
+void* iDeskThread(void*) {
 	printf("Information desk created\n");
 }
 
-void *announcerThread() {
+void* announcerThread(void*) {
 	printf("Announcer created\n");
 }
 
-void *agentThread(void *arg) {
-	int id = (int)arg;
+void* agentThread(void *arg) {
+	long id = (long)arg;
 	printf("Agent %d created\n", id);
 }
 
@@ -61,7 +63,7 @@ int main() {
 	pthread_t desk;
 	pthread_t announcer;
 	pthread_t customers[MAX_CUSTOMERS];
-	int x;	
+	long x;	
 	for(x = 0; x < 2; x++) {
         	int agentErr = pthread_create(&agents[x], NULL, &agentThread, (void*)x);
                 if(agentErr != 0) {
