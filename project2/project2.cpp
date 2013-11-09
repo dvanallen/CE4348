@@ -158,30 +158,33 @@ int main() {
 	pthread_t desk;
 	pthread_t announcer;
 	pthread_t customers[MAX_CUSTOMERS];
+	pthread_attr_t attr;
 	void* threadStatus;
 	int threadErr;
-
+	
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	long x;	
 	for(x = 0; x < 2; x++) {
-        	int agentErr = pthread_create(&agents[x], NULL, &agentThread, (void*)x);
+        	int agentErr = pthread_create(&agents[x], &attr, &agentThread, (void*)x);
                 if(agentErr != 0) {
                 	printf("Error creating agent thread #%d\n", x);
                         pthread_exit(NULL);
                 }
         }
-        int deskErr = pthread_create(&desk, NULL, &iDeskThread, NULL);
+        int deskErr = pthread_create(&desk, &attr, &iDeskThread, NULL);
         if(deskErr != 0) {
 	        printf("Error creating desk thread");
         	pthread_exit(NULL);
 	}
-	int anncErr = pthread_create(&announcer, NULL, &announcerThread, NULL);
+	int anncErr = pthread_create(&announcer, &attr, &announcerThread, NULL);
 	if(anncErr != 0) {
 		printf("Error creating announcer thread");
 		pthread_exit(NULL);
 	}
 	long z;
 	for(z = 0; z < MAX_CUSTOMERS; z++) {
-                int custErr = pthread_create(&customers[z], NULL, &customerThread, (void*)z);
+                int custErr = pthread_create(&customers[z], &attr, &customerThread, (void*)z);
                 if(custErr != 0) {
                         printf("Error creating customer thread #%d\n", z);
                         pthread_exit(NULL);
@@ -190,6 +193,7 @@ int main() {
 
 	/* Join threads and Exit. */
 	int w;
+	pthread_attr_destroy(&attr);
 	for(w = 0; w < MAX_CUSTOMERS; w++) {
 		threadErr = pthread_join(customers[w], &threadStatus);
 		printf("Customer %d was joined\n", (long)threadStatus);
@@ -202,7 +206,6 @@ int main() {
 		threadErr = pthread_join(announcer, &threadStatus);
 	}
 
-
-	return 0;
+	pthread_exit(NULL);
 }
 
