@@ -53,7 +53,7 @@ void* announcerThread(void*) {
 		ticketnr = queue4.front();
 		queue4.pop();
 		sem_post(&mutex5);
-		printf("Announcer calls number %d\n", ticketnr);
+		printf("Announcer calls number %ld\n", ticketnr);
 		sem_post(&announcer[ticketnr]);	
 	}	
 	pthread_exit(NULL);
@@ -64,7 +64,7 @@ void* agentThread(void *arg) {
 	long id = (long)arg;
 	long custnr;
 	
-	printf("Agent %d created\n", id);
+	printf("Agent %ld created\n", id);
 	while(true) {
 		sem_wait(&mutex4);
 		queue3.push(id);
@@ -75,11 +75,11 @@ void* agentThread(void *arg) {
 		custnr = queue2.front();
 		queue2.pop();
 		sem_post(&mutex3);
-		printf("Agent %d serving customer %d\n", id, custnr);
-		printf("Agent %d asks customer %d to take photo and eye exam\n", id, custnr);
+		printf("Agent %ld serving customer %ld\n", id, custnr);
+		printf("Agent %ld asks customer %ld to take photo and eye exam\n", id, custnr);
 		sem_post(&agent_prompt[custnr]);
 		sem_wait(&exam[custnr]);
-		printf("Agent %d gives license to customer %d\n", id, custnr);
+		printf("Agent %ld gives license to customer %ld\n", id, custnr);
 		sem_post(&finished[custnr]);
 	}
 	pthread_exit(NULL);
@@ -88,9 +88,9 @@ void* agentThread(void *arg) {
 void* customerThread(void *arg) {
         long custnr = (long)arg;
 
-        printf("Customer %d Created\n", custnr);
+        printf("Customer %ld Created\n", custnr);
         sem_wait(&desk_line);
-        printf("Customer %d enters DMV\n", custnr);
+        printf("Customer %ld enters DMV\n", custnr);
         sem_wait(&desk);
         sem_post(&desk_line);
         sem_wait(&mutex1);
@@ -99,7 +99,7 @@ void* customerThread(void *arg) {
         sem_post(&mutex1);
         sem_wait(&desk_finished[custnr]);
         
-	printf("Customer %d gets number %d, waits to be called\n", custnr, ticketnr[custnr]);
+	printf("Customer %ld gets number %ld, waits to be called\n", custnr, ticketnr[custnr]);
 	sem_wait(&mutex5);
 	queue4.push(ticketnr[custnr]);
 	sem_post(&waiting_room);
@@ -112,16 +112,16 @@ void* customerThread(void *arg) {
 	long agent_id = queue3.back();
 	queue3.pop();
 	sem_post(&mutex4);
-	printf("Customer %d being served by agent %d\n", custnr, agent_id);
+	printf("Customer %ld being served by agent %ld\n", custnr, agent_id);
 	sem_wait(&mutex3);
 	queue2.push(custnr);
 	sem_post(&agent_cust_ready[agent_id]);
 	sem_post(&mutex3);
 	sem_wait(&agent_prompt[custnr]);
-	printf("Customer %d completes photo and eye exam for agent %d\n", custnr, agent_id);
+	printf("Customer %ld completes photo and eye exam for agent %ld\n", custnr, agent_id);
 	sem_post(&exam[custnr]);
 	sem_wait(&finished[custnr]);
-	printf("Customer %d gets license and departs\n", custnr);
+	printf("Customer %ld gets license and departs\n", custnr);
 	pthread_exit((void*) custnr);
 }
 
@@ -161,7 +161,7 @@ int main() {
 	for(x = 0; x < 2; x++) {
         	int agentErr = pthread_create(&agents[x], NULL, &agentThread, (void*)x);
                 if(agentErr != 0) {
-                	printf("Error creating agent thread #%d\n", x);
+                	printf("Error creating agent thread #%ld\n", x);
                         pthread_exit(NULL);
                 }
         }
@@ -179,7 +179,7 @@ int main() {
 	for(z = 0; z < MAX_CUSTOMERS; z++) {
                 int custErr = pthread_create(&customers[z], NULL, &customerThread, (void*)z);
                 if(custErr != 0) {
-                        printf("Error creating customer thread #%d\n", z);
+                        printf("Error creating customer thread #%ld\n", z);
                         pthread_exit(NULL);
                 }
         }
@@ -187,7 +187,7 @@ int main() {
 	int w;
 	for(w = 0; w < MAX_CUSTOMERS; w++) {
 		threadErr = pthread_join(customers[w], &threadStatus);
-		printf("Customer %d was joined\n", (long)threadStatus);
+		printf("Customer %ld was joined\n", (long)threadStatus);
 	}
 
 	return 0;
