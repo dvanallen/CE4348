@@ -9,7 +9,7 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-#define MAX_CUSTOMERS 100
+#define MAX_CUSTOMERS 50
 
 int custDone = 0, agentDone = 0;
 long ticket_count = 0;
