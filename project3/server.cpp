@@ -2,6 +2,63 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <time.h>
+#include <stdio.h>
+
+#define BUFF_SIZE 100
+
+class Node
+{
+	public:
+		Node(char* pName, Node* pLeft = NULL, Node* pRight = NULL)
+		{
+			left = pLeft;
+			right = pRight;
+			name = pName;
+		}
+		~Node();
+		
+		void setNodes(Node* pLeft, Node* pRight)
+		{
+			left = pLeft;
+			right = pRight;
+		}
+		
+		Node* getLeft()
+		{
+			return left;
+		}
+		
+		Node* getRight()
+		{
+			return right;
+		}
+		
+		char* getName()
+		{
+			return name;
+		}
+		
+	private:
+		Node* left;
+		Node* right;
+		char* name;
+};
+
+/* Replies to the client at sck, tagging the reply payload with id */
+int reply(sockaddr_in sck, char id, char* reply)
+{
+	char* msg;
+	sprintf(msg, "%s%d!%s", id, strlen(reply), reply);
+	
+	if ((count = write(sck, msg, strlen(msg)+1)) == -1)
+	{
+		std::cout << "Error: Can't write to client socket.\n";
+		return -1;
+	}
+	
+	return count;
+}
 
 int main(int argc, char** argv)
 {
@@ -19,6 +76,21 @@ int main(int argc, char** argv)
 	char host[80];
 	/* Flag to continue reading from the client until it chooses to quit */
 	bool isDone = false;
+	
+	/* Create a node for each direction
+	   Create a circular linked list for easy traversal */
+	Node north("North");
+	Node south("South");
+	Node east("East", &south, &north);
+	Node west("West", &north, &south);
+	north.setNodes(&west, &east);
+	south.setNodes(&east, &west);
+	Node* curDirection = &north;
+	
+	int read_count = 0;
+	char buffer[BUFF_SIZE];
+	char* reply;
+	srand(time(NULL));
 	
 	/* Check if any other parameters were given, and exit if so */
 	if (argc != 2)
@@ -66,7 +138,57 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	std::cout << "Got client, exiting.\n";
+	while(!isDone)
+	{
+		if ((count = read(client_sock, buffer, sizeof(buffer))) == -1)
+		{
+			std::cout << "Error: Could not read data from client socket.\n";
+			return 1;
+		}
+		
+		switch(buffer[0])
+		{
+			/* Turn left */
+			case 'L': 
+				curDirection = curDirection->getLeft();
+				sprintf(reply, "Rover has turned left 90 degrees.");
+				break;
+			
+			/* Turn right */
+			case 'R': 
+				curDirection = curDirection->getRight();
+				sprintf(reply, "Rover has turned right 90 degrees.");
+				break;
+				
+			/* Picture */
+			case 'P': 
+				break;
+				
+			/* Direction */
+			case 'D': 
+				sprintf(reply, "Rover is facing %s", curDirection.getName());
+				break;
+				
+			/* Temperature */
+			case 'T': 
+				sprintf(reply, "Air temperature at Mars Rover is %d C", rand()%100 - 50);
+				break;
+				
+			/* Quit */
+			case 'Q': 
+				isDone = true;
+				break;
+				
+			default: 
+				std::cout << "Error: Unknown message ID.\n";
+				return 1;
+		}
+		
+		if (reply(client_sock, buffer[0], reply) == -1)
+		{
+			return 1;
+		}
+	}
 	
 	close(client_sock);
 	close(server_sock);
