@@ -1,3 +1,9 @@
+/*Ben Privat and Daniel Van Allen
+ * Project 3: Mars Rover Simulation
+ * CE4348: OS Concepts
+ * Due 2013-12-07
+*/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
