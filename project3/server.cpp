@@ -1,9 +1,17 @@
+/*Ben Privat and Daniel Van Allen
+ * Project 3: Mars Rover Simulation
+ * CE4348: OS Concepts
+ * Due 2013-12-07
+*/
+
 #include <iostream>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 
 #define BUFF_SIZE 100
 
@@ -46,12 +54,15 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int reply(sockaddr_in sck, char id, char* reply)
+int reply(void *sck, char id, char* reply)
 {
-	char* msg;
-	sprintf(msg, "%s%d!%s", id, strlen(reply), reply);
+	int count = 0;
+	char msg[BUFF_SIZE];
+	sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
+	int sd = *((int*)sck);
+	free(sck);
 	
-	if ((count = write(sck, msg, strlen(msg)+1)) == -1)
+	if ((count = write(sd, msg, strlen(msg)+1)) == -1)
 	{
 		std::cout << "Error: Can't write to client socket.\n";
 		return -1;
@@ -137,10 +148,13 @@ int main(int argc, char** argv)
 		std::cout << "Error: Cannot accept incoming connection.";
 		return 1;
 	}
-	
+
+	sd_client = (int*)(malloc(sizeof(client_sock)));
+	*sd_client = sd_current;
+
 	while(!isDone)
 	{
-		if ((count = read(client_sock, buffer, sizeof(buffer))) == -1)
+		if ((count = read(sd_client, buffer, sizeof(buffer))) == -1)
 		{
 			std::cout << "Error: Could not read data from client socket.\n";
 			return 1;
@@ -184,7 +198,7 @@ int main(int argc, char** argv)
 				return 1;
 		}
 		
-		if (reply(client_sock, buffer[0], reply) == -1)
+		if (reply(sd_client, buffer[0], reply) == -1)
 		{
 			return 1;
 		}
