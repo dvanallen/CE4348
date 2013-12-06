@@ -14,6 +14,7 @@
 #include <string.h>
 
 #define BUFF_SIZE 100
+#define REPLY_SIZE 1000
 
 class Node
 {
@@ -24,12 +25,8 @@ class Node
 			right = pRight;
 			name = pName;
 		}
-		~Node()
-		{
-			delete left;
-			delete right;
-			delete name;
-		}		
+		~Node() {}
+		
 		void setNodes(Node* pLeft, Node* pRight)
 		{
 			left = pLeft;
@@ -58,37 +55,48 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int replyFunct(void *sck, char id, char* reply)
+int replyFunct(int sd, char id, char* reply)
 {
 	int count = 0;
 	char msg[BUFF_SIZE];
 	sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
-	int sd = *((int*)sck);
-	free(sck);
 	
 	if ((count = write(sd, msg, strlen(msg)+1)) == -1)
 	{
 		std::cout << "Error: Can't write to client socket.\n";
 		return -1;
 	}
-	
 	return count;
 }
 
 int main(int argc, char** argv)
 {
+	/** Server Setup **/
 	/* port number from argv */
 	int port;
 	/* length of internet socket struct, for allocation on accept() */
 	int addrlen;
 	/* socket file descriptors for server and eventual connecting client */
-	int server_sock, client_sock;
+	int sd_server, sd_client;
 	/* describes the socket used by the server */
 	struct sockaddr_in sin;
 	/* describes the socket used to communicate with the client */
 	struct sockaddr_in pin;
 	/* Used to retrieve the hostname of this server */
 	char host[80];
+
+	/** Client Setup and Communication **/
+	/* Stores number of characters read from client */
+	int read_count = 0;
+	/* stores the data sent by the client */
+	char buffer[BUFF_SIZE];
+	/* stores the data to be sent to the client */
+	char reply[REPLY_SIZE];
+	/* seed RNG for temperature */
+	srand(time(NULL));
+	/* Some messages from client do not require a reply
+	   This flag is set to false when this is the case */
+	bool doReply = false;
 	/* Flag to continue reading from the client until it chooses to quit */
 	bool isDone = false;
 	
@@ -102,11 +110,6 @@ int main(int argc, char** argv)
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
 	
-	int read_count = 0;
-	char* buffer;
-	char* reply = NULL;
-	srand(time(NULL));
-	int *sd_client;
 	
 	/* Check if any other parameters were given, and exit if so */
 	if (argc != 2)
@@ -118,7 +121,7 @@ int main(int argc, char** argv)
 	port = atoi(argv[1]);
 	
 	/* Attempt to create a stream socket */
-	if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+	if ((sd_server = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
 	{
 		std::cout << "Error: Cannot create socket.\n";
 		return 1;
@@ -132,13 +135,13 @@ int main(int argc, char** argv)
 	sin.sin_port = htons(port);        
 
 	/* Attemp to bind the socket using the socket info in sin */
-	if (bind(server_sock, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
+	if (bind(sd_server, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 		std::cout << "Error: Cannot bind to port.\n";
 		return 1;
 	}
 
 	/* set queue size of pending connections */ 
-	listen(server_sock, 5);
+	listen(sd_server, 5);
 
 	/* Get hostname and announce the server's startup */
 	gethostname(host, 80); 
@@ -147,71 +150,82 @@ int main(int argc, char** argv)
 	/* store length for use in accept() */
 	addrlen = sizeof(pin);
 	/* blocks until a client attempts to connect.
-	   If successful, client_sock describes the server-client connection */
-	if ((client_sock = accept(server_sock, (struct sockaddr *)  &pin, (socklen_t*)&addrlen)) == -1) 
+	   If successful, sd_client describes the server-client connection */
+	if ((sd_client = accept(sd_server, (struct sockaddr *)  &pin, (socklen_t*)&addrlen)) == -1) 
 	{
 		std::cout << "Error: Cannot accept incoming connection.";
 		return 1;
 	}
 
-	sd_client = (int*)(malloc(sizeof(client_sock)));
-	*sd_client = client_sock;
-	
-	int sd = *sd_client;
 	while(!isDone)
 	{
-		if ((read_count = read(sd, buffer, sizeof(buffer))) == -1)
+		doReply = true;
+		if ((read_count = read(sd_client, buffer, sizeof(buffer))) == -1)
 		{
 			std::cout << "Error: Could not read data from client socket.\n";
 			return 1;
 		}
 		
-		switch(buffer[0])
+		if (read_count == 0)
 		{
-			/* Turn left */
-			case 'L': 
-				curDirection = curDirection->getLeft();
-				sprintf(reply, "Rover has turned left 90 degrees.");
-				break;
-			
-			/* Turn right */
-			case 'R': 
-				curDirection = curDirection->getRight();
-				sprintf(reply, "Rover has turned right 90 degrees.");
-				break;
-				
-			/* Picture */
-			case 'P': 
-				break;
-				
-			/* Direction */
-			case 'D': 
-				sprintf(reply, "Rover is facing %s", curDirection->getName());
-				break;
-				
-			/* Temperature */
-			case 'T': 
-				sprintf(reply, "Air temperature at Mars Rover is %d C", rand()%100 - 50);
-				break;
-				
-			/* Quit */
-			case 'Q': 
-				isDone = true;
-				break;
-				
-			default: 
-				std::cout << "Error: Unknown message ID.\n";
-				return 1;
+			std::cout << "Error: No message from client.\n";
+			isDone = true;
 		}
-		
-		if (replyFunct(sd_client, buffer[0], reply) == -1)
+		else
 		{
-			return 1;
+			switch(buffer[0])
+			{
+				/* Turn left */
+				case 'L': 
+					curDirection = curDirection->getLeft();
+					sprintf(reply, "Rover has turned left 90 degrees.");
+					break;
+			
+				/* Turn right */
+				case 'R': 
+					curDirection = curDirection->getRight();
+					sprintf(reply, "Rover has turned right 90 degrees.");
+					break;
+				
+				/* Picture */
+				case 'P': 
+					break;
+				
+				/* Direction */
+				case 'D': 
+					sprintf(reply, "Rover is facing %s", curDirection->getName());
+					break;
+				
+				/* Temperature */
+				case 'T': 
+					sprintf(reply, "Air temperature at Mars Rover is %d C", rand()%100 - 50);
+					break;
+				
+				/* Quit */
+				case 'Q': 
+					isDone = true;
+					doReply = false;
+					break;
+				
+				default: 
+					std::cout << "Error: Unknown message ID.\n";
+					doReply = false;
+					break;
+			}
+		
+			if (doReply)
+			{
+				if (replyFunct(sd_client, buffer[0], reply) == -1)
+				{
+					std::cout << "Error: Cannot send reply.\n"; 
+					return 1;
+				}
+			}
 		}
 	}
 	
-	close(client_sock);
-	close(server_sock);
-	
+	close(sd_client);
+	close(sd_server);
+	std::cout << "DONE\n";
 	return 0;
 }
