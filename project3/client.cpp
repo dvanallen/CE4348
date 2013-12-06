@@ -17,7 +17,7 @@
 /* Run as:  client host port
  *  *
  *   * where host is the machine to connect to and port is its port number */
-#define BUFSIZE     80       /* anything large enough for your messages */
+#define BUFSIZE     100       /* anything large enough for your messages */
 
 int main(int argc, char *argv[])
 {

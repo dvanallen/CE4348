@@ -24,8 +24,12 @@ class Node
 			right = pRight;
 			name = pName;
 		}
-		~Node();
-		
+		~Node()
+		{
+			delete left;
+			delete right;
+			delete name;
+		}		
 		void setNodes(Node* pLeft, Node* pRight)
 		{
 			left = pLeft;
@@ -54,7 +58,7 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int reply(void *sck, char id, char* reply)
+int replyFunct(void *sck, char id, char* reply)
 {
 	int count = 0;
 	char msg[BUFF_SIZE];
@@ -99,9 +103,10 @@ int main(int argc, char** argv)
 	Node* curDirection = &north;
 	
 	int read_count = 0;
-	char buffer[BUFF_SIZE];
-	char* reply;
+	char* buffer;
+	char* reply = NULL;
 	srand(time(NULL));
+	int *sd_client;
 	
 	/* Check if any other parameters were given, and exit if so */
 	if (argc != 2)
@@ -143,18 +148,19 @@ int main(int argc, char** argv)
 	addrlen = sizeof(pin);
 	/* blocks until a client attempts to connect.
 	   If successful, client_sock describes the server-client connection */
-	if ((client_sock = accept(server_sock, (struct sockaddr *)  &pin, &addrlen) == -1) 
+	if ((client_sock = accept(server_sock, (struct sockaddr *)  &pin, (socklen_t*)&addrlen)) == -1) 
 	{
 		std::cout << "Error: Cannot accept incoming connection.";
 		return 1;
 	}
 
 	sd_client = (int*)(malloc(sizeof(client_sock)));
-	*sd_client = sd_current;
-
+	*sd_client = client_sock;
+	
+	int sd = *sd_client;
 	while(!isDone)
 	{
-		if ((count = read(sd_client, buffer, sizeof(buffer))) == -1)
+		if ((read_count = read(sd, buffer, sizeof(buffer))) == -1)
 		{
 			std::cout << "Error: Could not read data from client socket.\n";
 			return 1;
@@ -180,7 +186,7 @@ int main(int argc, char** argv)
 				
 			/* Direction */
 			case 'D': 
-				sprintf(reply, "Rover is facing %s", curDirection.getName());
+				sprintf(reply, "Rover is facing %s", curDirection->getName());
 				break;
 				
 			/* Temperature */
@@ -198,7 +204,7 @@ int main(int argc, char** argv)
 				return 1;
 		}
 		
-		if (reply(sd_client, buffer[0], reply) == -1)
+		if (replyFunct(sd_client, buffer[0], reply) == -1)
 		{
 			return 1;
 		}
