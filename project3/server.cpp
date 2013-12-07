@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 		if (read_count == 0)
 		{
 			std::cout << "Error: No message from client.\n";
-			isDone = true;
+		        isDone = true;
 		}
 		else
 		{
@@ -204,7 +204,7 @@ int main(int argc, char** argv)
 				/* Quit */
 				case 'Q': 
 					isDone = true;
-					doReply = false;
+					sprintf(reply, "Server Quitting.");
 					break;
 				
 				default: 
