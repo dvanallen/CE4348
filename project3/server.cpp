@@ -208,7 +208,7 @@ int main(int argc, char** argv)
 					break;
 				
 				default: 
-					std::cout << "Error: Unknown message ID.\n";
+					printf("Error: Unknown message ID %c.\n", buffer[0]);
 					doReply = false;
 					break;
 			}
