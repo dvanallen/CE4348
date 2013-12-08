@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
    char hostname[100];
    char buf[BUFSIZE];
-   char query;
+   char query[BUFSIZE];
    int sd;
    int port;
    int count;
@@ -80,13 +80,13 @@ int main(int argc, char *argv[])
 
    while(!isDone)
    {
-	   gets(&query);
-	   if(query == 'Q' || query == 'q') {
+	   gets(query);
+	   if(query[0] == 'Q' || query[0] == 'q') {
 	      isDone = true;
 	   }
 	   
 	   /* send the  to the server */
-	   if ( (count = write(sd, &query, 1)) == -1) {
+	   if ( (count = write(sd, query, strlen(query)+1)) == -1) {
 	      perror("Error on write call");
 	      exit(1);
 	   }

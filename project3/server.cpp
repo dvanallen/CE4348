@@ -99,13 +99,15 @@ int main(int argc, char** argv)
 	bool doReply = false;
 	/* Flag to continue reading from the client until it chooses to quit */
 	bool isDone = false;
+	/* stores random air temperature */
+	int temperature = 0;
 	
 	/* Create a node for each direction
 	   Create a circular linked list for easy traversal */
 	Node north("North");
 	Node south("South");
-	Node east("East", &south, &north);
-	Node west("West", &north, &south);
+	Node east("East", &north, &south);
+	Node west("West", &south, &north);
 	north.setNodes(&west, &east);
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
@@ -156,6 +158,8 @@ int main(int argc, char** argv)
 		std::cout << "Error: Cannot accept incoming connection.";
 		return 1;
 	}
+	
+	std::cout << "Client connected.\n";
 
 	while(!isDone)
 	{
@@ -169,7 +173,7 @@ int main(int argc, char** argv)
 		if (read_count == 0)
 		{
 			std::cout << "Error: No message from client.\n";
-		        isDone = true;
+			isDone = true;
 		}
 		else
 		{
@@ -178,37 +182,44 @@ int main(int argc, char** argv)
 				/* Turn left */
 				case 'L': 
 					curDirection = curDirection->getLeft();
+					std::cout << "Rover turns left 90 degrees.\n";
 					sprintf(reply, "Rover has turned left 90 degrees.");
 					break;
 			
 				/* Turn right */
 				case 'R': 
 					curDirection = curDirection->getRight();
+					std::cout << "Rover turns right 90 degrees.\n";
 					sprintf(reply, "Rover has turned right 90 degrees.");
 					break;
 				
 				/* Picture */
 				case 'P': 
+					std::cout << "Rover sends image.\n";
 					break;
 				
 				/* Direction */
 				case 'D': 
+					std::cout << "Rover sends direction " << curDirection->getName() << ".\n";
 					sprintf(reply, "Rover is facing %s", curDirection->getName());
 					break;
 				
 				/* Temperature */
 				case 'T': 
-					sprintf(reply, "Air temperature at Mars Rover is %d C", rand()%100 - 50);
+					temperature = rand()%100 - 50;
+					std::cout << "Rover sends air temperature of " << temperature << " C.\n";
+					sprintf(reply, "Air temperature at Mars Rover is %d C", temperature);
 					break;
 				
 				/* Quit */
 				case 'Q': 
 					isDone = true;
+					std::cout << "Rover received quit message, exiting...\n";
 					sprintf(reply, "Server Quitting.");
 					break;
 				
-				default: 
-					printf("Error: Unknown message ID %c.\n", buffer[0]);
+				default:
+					std::cout << "Rover received unknown message ID " << buffer[0] << ".\n";
 					doReply = false;
 					break;
 			}
