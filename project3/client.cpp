@@ -37,7 +37,7 @@ int getFileLength(char msg[])
 const char* extractMsg(std::string str)
 {
 	int index = 0;
-	for(int i = 0; i < str.size(); i++)
+	for(int i = 0; i < (signed) str.size(); i++)
 	{
 		if (str.at(i) == '!')
 		{
@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
    char msg_id;
    //char msg[MSG_SIZE];
    std::string msg = "";
+   std::string extractedMsg = "";
    int sd;
    int port;
    int count, cur_count;
@@ -115,6 +116,7 @@ int main(int argc, char *argv[])
    while(!isDone)
    {
 		msg = "";
+		extractedMsg = "";
 	   gets(query);
 	   if(query[0] == 'Q' || query[0] == 'q') {
 	      isDone = true;
@@ -148,11 +150,12 @@ int main(int argc, char *argv[])
 			printf("Client read %d bytes\n", count);
 			msg += buf;
 			cur_count += count;
+			extractedMsg = extractMsg(msg);
 		}
 		if (msg_id == 'P' || msg_id == 'p')
 		{
 			std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
-			output.write(msg.c_str(), length);
+			output.write(extractedMsg.c_str(), length);
 			output.close();
 			printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
 		}
