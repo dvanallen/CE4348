@@ -19,11 +19,12 @@
 class Node
 {
 	public:
-		Node(char* pName, Node* pLeft = NULL, Node* pRight = NULL)
+		Node(char* pName, char* pImage, Node* pLeft = NULL, Node* pRight = NULL)
 		{
 			left = pLeft;
 			right = pRight;
 			name = pName;
+			image = pImage;
 		}
 		~Node() {}
 		
@@ -48,10 +49,15 @@ class Node
 			return name;
 		}
 		
+		char* getImage()
+		{
+			return image;
+		}
 	private:
 		Node* left;
 		Node* right;
 		char* name;
+		char* image;
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
@@ -104,10 +110,10 @@ int main(int argc, char** argv)
 	
 	/* Create a node for each direction
 	   Create a circular linked list for easy traversal */
-	Node north("North");
-	Node south("South");
-	Node east("East", &north, &south);
-	Node west("West", &south, &north);
+	Node north("North", "images/north.jpg");
+	Node south("South", "images/south.jpg");
+	Node east("East", "images/east.jpg", &north, &south);
+	Node west("West", "images/west.jpg", &south, &north);
 	north.setNodes(&west, &east);
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
