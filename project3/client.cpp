@@ -138,7 +138,9 @@ int main(int argc, char *argv[])
 
 		length = getFileLength(buf);
 		printf("Length %d.\n", length);
+		printf("buf is: %s\n", buf);
 		msg += buf;
+		printf("Msg is: %s\n", msg.c_str());
 		cur_count = count;
 		msg_id = buf[0];
 		while (cur_count < length)
@@ -148,7 +150,15 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 			printf("Client read %d bytes\n", count);
+			if (cur_count < (length -1))
+			{
+			 	std::string buffer(buf);
+				std::string buffer2 = buffer.substr(0, (std::string::npos - 1));
+				memcpy(buf,buffer2.c_str(),buffer2.size());
+			}
 			msg += buf;
+	                printf("buf is: %s\n", buf);
+			printf("Msg is: %s\n", msg.c_str());
 			cur_count += count;
 			extractedMsg = extractMsg(msg);
 		}
