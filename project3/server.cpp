@@ -115,8 +115,8 @@ int main(int argc, char** argv)
 	   Create a circular linked list for easy traversal */
 	Node north("North", "images/north.jpg");
 	Node south("South", "images/south.jpg");
-	Node east("East", "images/east.jpg", &north, &south);
-	Node west("West", "images/west.jpg", &south, &north);
+	Node east("East", &north, &south);
+	Node west("West", &south, &north);
 	north.setNodes(&west, &east);
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
