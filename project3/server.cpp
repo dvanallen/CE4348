@@ -62,34 +62,16 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int replyFunct(int sd, char id, char* reply, Node* curDirection)
+int replyFunct(int sd, char id, char* reply)
 {
 	int count = 0;
-	if(id == 'P' || id == 'p')
+	char msg[BUFF_SIZE];
+	sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
+	
+	if ((count = write(sd, msg, strlen(msg)+1)) == -1)
 	{
-		std::ifstream curImage (curDirection->getImage(),std::fstream::binary|std::fstream::ate);
-		int size = curImage.tellg();
-		char memblock[size];
-		curImage.seekg(0,std::fstream::beg);
-		curImage.read(memblock,size);
-		
-		if ((count = write(sd, memblock, size)) == -1)
-		{
-			std::cout << "Error: Can't write to client socket.\n";
-                        return -1;
-		}
-
-	}
-	else
-	{
-		char msg[BUFF_SIZE];
-		sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
-		
-		if ((count = write(sd, msg, strlen(msg)+1)) == -1)
-		{
-			std::cout << "Error: Can't write to client socket.\n";
-			return -1;
-		}
+		std::cout << "Error: Can't write to client socket.\n";
+		return -1;
 	}
 	return count;
 }
@@ -125,8 +107,10 @@ int main(int argc, char** argv)
 	/* Flag to continue reading from the client until it chooses to quit */
 	bool isDone = false;
 	/* stores random air temperature */
-	int temperature = 0;
-	
+	int temperature = 0;	
+	int count = 0;
+	int size = 0;
+
 	/* Create a node for each direction
 	   Create a circular linked list for easy traversal */
 	Node north("North", "images/north.jpg");
@@ -137,7 +121,7 @@ int main(int argc, char** argv)
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
 	
-	
+
 	/* Check if any other parameters were given, and exit if so */
 	if (argc != 2)
 	{
@@ -220,7 +204,20 @@ int main(int argc, char** argv)
 				
 				/* Picture */
 				case 'P': 
+					{
 					std::cout << "Rover sends image.\n";
+					std::ifstream curImage (curDirection->getImage(),std::fstream::binary|std::fstream::ate);
+					size = curImage.tellg();
+					char memblock[size];
+					curImage.seekg(0,std::fstream::beg);
+					curImage.read(memblock,size);
+					
+					if ((count = write(sd_client, memblock, size)) == -1)
+					{
+						std::cout << "Error: Can't write to client socket.\n";
+						return -1;
+					}
+					}
 					break;
 				
 				/* Direction */
@@ -251,7 +248,7 @@ int main(int argc, char** argv)
 		
 			if (doReply)
 			{
-				if (replyFunct(sd_client, buffer[0], reply, curDirection) == -1)
+				if (replyFunct(sd_client, buffer[0], reply) == -1)
 				{
 					std::cout << "Error: Cannot send reply.\n"; 
 					return 1;
