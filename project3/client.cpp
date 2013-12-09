@@ -19,15 +19,48 @@
  *  *
  *   * where host is the machine to connect to and port is its port number */
 #define BUFSIZE     100       /* anything large enough for your messages */
+#define MSG_SIZE 10000
+
+int getFileLength(char msg[])
+{
+	std::string length = "";
+	for (int i = 1; i < BUFSIZE; i++)
+	{
+		if (msg[i] == '!')
+			break;
+		length += msg[i];
+	}
+	
+	return atoi(length.c_str());
+}
+
+const char* extractMsg(std::string str)
+{
+	int index = 0;
+	for(int i = 0; i < str.size(); i++)
+	{
+		if (str.at(i) == '!')
+		{
+			index = i+1;
+			break;
+		}
+	}
+	
+	return str.substr(index, std::string::npos).c_str();
+}
 
 int main(int argc, char *argv[])
 {
    char hostname[100];
    char buf[BUFSIZE];
    char query[BUFSIZE];
+   char msg_id;
+   //char msg[MSG_SIZE];
+   std::string msg = "";
    int sd;
    int port;
-   int count;
+   int count, cur_count;
+   int length;
    bool isDone = false;
    struct sockaddr_in pin;
    struct hostent *hp;
@@ -81,6 +114,7 @@ int main(int argc, char *argv[])
 
    while(!isDone)
    {
+		msg = "";
 	   gets(query);
 	   if(query[0] == 'Q' || query[0] == 'q') {
 	      isDone = true;
@@ -92,27 +126,45 @@ int main(int argc, char *argv[])
 	      exit(1);
 	   }
 	   printf("Client sent %d bytes\n", count);
-	   if (query[0] == 'p' || query[0] == 'P')
-	   {
-		   std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
-		   while((count = read(sd,buf,BUFSIZE)) > 0)
-			   output.write(buf,count);
-		   output.close();
-		   printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
-	   }
-	   else
-	   {
-		   /* wait for a message to come back from the server */
-		   if ( (count = read(sd, buf, BUFSIZE)) == -1) {
-		      perror("Error on read call");
-		      exit(1);
-		   }
-		   printf("Client read %d bytes\n", count);
+	   
+		/* wait for a message to come back from the server */
+		if ( (count = read(sd, buf, BUFSIZE)) == -1) {
+			perror("Error on read call");
+			exit(1);
+		}
+		printf("Client read %d bytes\n", count);
 
-
-		   /* print the received message */
-		   printf("\n\n%s\n\n", buf);
-	   }
+		length = getFileLength(buf);
+		printf("Length %d.\n", length);
+		msg += buf;
+		cur_count = count;
+		msg_id = buf[0];
+		while (cur_count < length)
+		{
+			if ( (count = read(sd, buf, BUFSIZE)) == -1) {
+				perror("Error on read call");
+				exit(1);
+			}
+			printf("Client read %d bytes\n", count);
+			msg += buf;
+			cur_count += count;
+		}
+		if (msg_id == 'P' || msg_id == 'p')
+		{
+			printf("Saved image. (but not really)\n");
+		}
+		else
+		{
+			printf("\n\n%s\n\n", extractMsg(msg));
+		}
+			//std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
+			//while((count = read(sd,buf,BUFSIZE)) > 0)
+			//{
+			//	output.write(buf,count);
+			//}
+			//output.close();
+			//printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
+		//}
    }
 
    /* close the socket */

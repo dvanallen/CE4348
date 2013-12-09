@@ -15,7 +15,7 @@
 #include <fstream>
 
 #define BUFF_SIZE 100
-#define REPLY_SIZE 1000
+#define REPLY_SIZE 10000
 
 class Node
 {
@@ -108,15 +108,14 @@ int main(int argc, char** argv)
 	bool isDone = false;
 	/* stores random air temperature */
 	int temperature = 0;	
-	int count = 0;
 	int size = 0;
 
 	/* Create a node for each direction
 	   Create a circular linked list for easy traversal */
 	Node north("North", "images/north.jpg");
 	Node south("South", "images/south.jpg");
-	Node east("East", &north, &south);
-	Node west("West", &south, &north);
+	Node east("East", "images/east.jpg", &north, &south);
+	Node west("West", "images/west.jpg", &south, &north);
 	north.setNodes(&west, &east);
 	south.setNodes(&east, &west);
 	Node* curDirection = &north;
@@ -208,15 +207,13 @@ int main(int argc, char** argv)
 					std::cout << "Rover sends image.\n";
 					std::ifstream curImage (curDirection->getImage(),std::fstream::binary|std::fstream::ate);
 					size = curImage.tellg();
-					char memblock[size];
+					std::cout << "File size " << size << ".\n";
 					curImage.seekg(0,std::fstream::beg);
-					curImage.read(memblock,size);
-					
-					if ((count = write(sd_client, memblock, size)) == -1)
-					{
-						std::cout << "Error: Can't write to client socket.\n";
-						return -1;
-					}
+					std::cout << "Pos now " << curImage.tellg() << "\n";
+					curImage.read(reply,size);
+					std::cout << "Pos now " << curImage.tellg() << "\n";
+					curImage.close();
+					std::cout << "Data: " << reply << "\n\n";
 					}
 					break;
 				
