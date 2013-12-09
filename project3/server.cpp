@@ -14,7 +14,7 @@
 #include <string.h>
 #include <fstream>
 
-#define BUFF_SIZE 100
+#define BUFF_SIZE 10100
 #define REPLY_SIZE 10000
 
 class Node
@@ -62,13 +62,18 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int replyFunct(int sd, char id, char* reply)
+int replyFunct(int sd, char id, char* reply, int reply_size)
 {
 	int count = 0;
+	int head_size;
 	char msg[BUFF_SIZE];
-	sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
+	char head[100];
 	
-	if ((count = write(sd, msg, strlen(msg)+1)) == -1)
+	sprintf(head, "%c%u!", id, reply_size);
+	head_size = strlen(head);
+	sprintf(msg, "%s%s", head, reply);
+	
+	if ((count = write(sd, msg, head_size + reply_size + 1)) == -1)
 	{
 		std::cout << "Error: Can't write to client socket.\n";
 		return -1;
@@ -108,7 +113,7 @@ int main(int argc, char** argv)
 	bool isDone = false;
 	/* stores random air temperature */
 	int temperature = 0;	
-	int size = 0;
+	int reply_size = 0;
 
 	/* Create a node for each direction
 	   Create a circular linked list for easy traversal */
@@ -192,6 +197,7 @@ int main(int argc, char** argv)
 					curDirection = curDirection->getLeft();
 					std::cout << "Rover turns left 90 degrees.\n";
 					sprintf(reply, "Rover has turned left 90 degrees.");
+					reply_size = strlen(reply);
 					break;
 			
 				/* Turn right */
@@ -199,6 +205,7 @@ int main(int argc, char** argv)
 					curDirection = curDirection->getRight();
 					std::cout << "Rover turns right 90 degrees.\n";
 					sprintf(reply, "Rover has turned right 90 degrees.");
+					reply_size = strlen(reply);
 					break;
 				
 				/* Picture */
@@ -206,14 +213,10 @@ int main(int argc, char** argv)
 					{
 					std::cout << "Rover sends image.\n";
 					std::ifstream curImage (curDirection->getImage(),std::fstream::binary|std::fstream::ate);
-					size = curImage.tellg();
-					std::cout << "File size " << size << ".\n";
+					reply_size = curImage.tellg();
 					curImage.seekg(0,std::fstream::beg);
-					std::cout << "Pos now " << curImage.tellg() << "\n";
-					curImage.read(reply,size);
-					std::cout << "Pos now " << curImage.tellg() << "\n";
+					curImage.read(reply,reply_size);
 					curImage.close();
-					std::cout << "Data: " << reply << "\n\n";
 					}
 					break;
 				
@@ -221,6 +224,7 @@ int main(int argc, char** argv)
 				case 'D': 
 					std::cout << "Rover sends direction " << curDirection->getName() << ".\n";
 					sprintf(reply, "Rover is facing %s", curDirection->getName());
+					reply_size = strlen(reply);
 					break;
 				
 				/* Temperature */
@@ -228,6 +232,7 @@ int main(int argc, char** argv)
 					temperature = rand()%100 - 50;
 					std::cout << "Rover sends air temperature of " << temperature << " C.\n";
 					sprintf(reply, "Air temperature at Mars Rover is %d C", temperature);
+					reply_size = strlen(reply);
 					break;
 				
 				/* Quit */
@@ -235,6 +240,7 @@ int main(int argc, char** argv)
 					isDone = true;
 					std::cout << "Rover received quit message, exiting...\n";
 					sprintf(reply, "Server Quitting.");
+					reply_size = strlen(reply);
 					break;
 				
 				default:
@@ -245,7 +251,7 @@ int main(int argc, char** argv)
 		
 			if (doReply)
 			{
-				if (replyFunct(sd_client, buffer[0], reply) == -1)
+				if (replyFunct(sd_client, buffer[0], reply, reply_size) == -1)
 				{
 					std::cout << "Error: Cannot send reply.\n"; 
 					return 1;
