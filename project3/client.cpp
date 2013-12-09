@@ -13,6 +13,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <string>
+#include <fstream>
 
 /* Run as:  client host port
  *  *
@@ -85,23 +86,33 @@ int main(int argc, char *argv[])
 	      isDone = true;
 	   }
 	   
-	   /* send the  to the server */
+	   /* send the query to the server */
 	   if ( (count = write(sd, query, strlen(query)+1)) == -1) {
 	      perror("Error on write call");
 	      exit(1);
 	   }
 	   printf("Client sent %d bytes\n", count);
-
-	   /* wait for a message to come back from the server */
-	   if ( (count = read(sd, buf, BUFSIZE)) == -1) {
-	      perror("Error on read call");
-	      exit(1);
+	   if (query[0] == 'p' || query[0] == 'P')
+	   {
+		   std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
+		   while((count = read(sd,buf,BUFSIZE)) > 0)
+			   output.write(buf,count);
+		   output.close();
+		   printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
 	   }
-	   printf("Client read %d bytes\n", count);
+	   else
+	   {
+		   /* wait for a message to come back from the server */
+		   if ( (count = read(sd, buf, BUFSIZE)) == -1) {
+		      perror("Error on read call");
+		      exit(1);
+		   }
+		   printf("Client read %d bytes\n", count);
 
 
-	   /* print the received message */
-	   printf("\n\n%s\n\n", buf);
+		   /* print the received message */
+		   printf("\n\n%s\n\n", buf);
+	   }
    }
 
    /* close the socket */

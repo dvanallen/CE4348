@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <fstream>
 
 #define BUFF_SIZE 100
 #define REPLY_SIZE 1000
@@ -61,16 +62,34 @@ class Node
 };
 
 /* Replies to the client at sck, tagging the reply payload with id */
-int replyFunct(int sd, char id, char* reply)
+int replyFunct(int sd, char id, char* reply, Node* curDirection)
 {
 	int count = 0;
-	char msg[BUFF_SIZE];
-	sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
-	
-	if ((count = write(sd, msg, strlen(msg)+1)) == -1)
+	if(id == 'P' || id == 'p')
 	{
-		std::cout << "Error: Can't write to client socket.\n";
-		return -1;
+		std::ifstream curImage (curDirection->getImage(),std::fstream::binary|std::fstream::ate);
+		int size = curImage.tellg();
+		char memblock[size];
+		curImage.seekg(0,std::fstream::beg);
+		curImage.read(memblock,size);
+		
+		if ((count = write(sd, memblock, size)) == -1)
+		{
+			std::cout << "Error: Can't write to client socket.\n";
+                        return -1;
+		}
+
+	}
+	else
+	{
+		char msg[BUFF_SIZE];
+		sprintf(msg, "%c%u!%s", id, (unsigned) strlen(reply), reply);
+		
+		if ((count = write(sd, msg, strlen(msg)+1)) == -1)
+		{
+			std::cout << "Error: Can't write to client socket.\n";
+			return -1;
+		}
 	}
 	return count;
 }
@@ -232,7 +251,7 @@ int main(int argc, char** argv)
 		
 			if (doReply)
 			{
-				if (replyFunct(sd_client, buffer[0], reply) == -1)
+				if (replyFunct(sd_client, buffer[0], reply, curDirection) == -1)
 				{
 					std::cout << "Error: Cannot send reply.\n"; 
 					return 1;
