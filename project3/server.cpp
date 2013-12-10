@@ -17,6 +17,8 @@
 #define BUFF_SIZE 10100
 #define REPLY_SIZE 10000
 
+/* A circular linked list of these Nodes creates a compass.
+   The rover can then quickly turn left and right by following the links. */
 class Node
 {
 	public:
@@ -112,7 +114,8 @@ int main(int argc, char** argv)
 	/* Flag to continue reading from the client until it chooses to quit */
 	bool isDone = false;
 	/* stores random air temperature */
-	int temperature = 0;	
+	int temperature = 0;
+	/* needed for replyFunc to know the size of the given reply */
 	int reply_size = 0;
 
 	/* Create a node for each direction
@@ -176,13 +179,16 @@ int main(int argc, char** argv)
 
 	while(!isDone)
 	{
+		/* By default, the server will send a reply. 
+		   Some responses will set this to false when it is unnecessary. */
 		doReply = true;
 		if ((read_count = read(sd_client, buffer, sizeof(buffer))) == -1)
 		{
 			std::cout << "Error: Could not read data from client socket.\n";
 			return 1;
 		}
-		
+		/* If client is disconnected prematurely, it sends several 0 length messages.
+		   If this happens, then we've lost the client and can exit. */
 		if (read_count == 0)
 		{
 			std::cout << "Error: No message from client.\n";
@@ -190,6 +196,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			/* Check the first character (the message ID) */
 			switch(buffer[0])
 			{
 				/* Turn left */
@@ -262,6 +269,6 @@ int main(int argc, char** argv)
 	
 	close(sd_client);
 	close(sd_server);
-	std::cout << "DONE\n";
+	
 	return 0;
 }
