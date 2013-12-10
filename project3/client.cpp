@@ -1,7 +1,7 @@
 /*Ben Privat and Daniel Van Allen
  * Project 3: Mars Rover Simulation
  * CE4348: OS Concepts
- * Due 2013-12-07
+ * Due 2013-12-10
 */
 
 #include <stdio.h>
@@ -21,9 +21,13 @@
 #define BUFSIZE     100       /* anything large enough for your messages */
 #define MSG_SIZE 10000
 
+/* Parse the file length string from the message and return it as an int */
 int getFileLength(char msg[])
 {
 	std::string length = "";
+	/* Starting at 1 (after the message ID) read off the digits of
+	   the length string.  '!' delimits the end of the length, so quit
+	   once we find it. */
 	for (int i = 1; i < BUFSIZE; i++)
 	{
 		if (msg[i] == '!')
@@ -34,19 +38,13 @@ int getFileLength(char msg[])
 	return atoi(length.c_str());
 }
 
+/* Parse the payload from the message received from the server and return it */
 const char* extractMsg(std::string str)
 {
-	int index = 0;
-	for(int i = 0; i < (signed) str.size(); i++)
-	{
-		if (str.at(i) == '!')
-		{
-			index = i+1;
-			break;
-		}
-	}
-	
-	return str.substr(index, std::string::npos).c_str();
+	/* find the '!', which marks the beginning of the payload.
+	   Take the substring from after the '!' to the end of the string
+	   and convert to a c string */
+	return str.substr(str.find('!')+1, std::string::npos).c_str();
 }
 
 int main(int argc, char *argv[])
@@ -137,10 +135,10 @@ int main(int argc, char *argv[])
 		printf("Client read %d bytes\n", count);
 
 		length = getFileLength(buf);
-		printf("Length %d.\n", length);
-		printf("buf is: %s\n", buf);
-		msg += buf;
-		printf("Msg is: %s\n", msg.c_str());
+		//printf("Length %d.\n", length);
+		//printf("buf is: %s\n", buf);
+		msg = extractMsg(buf);
+		//printf("Msg is: %s\n", msg.c_str());
 		cur_count = count;
 		msg_id = buf[0];
 		while (cur_count < length)
@@ -157,21 +155,20 @@ int main(int argc, char *argv[])
 				memcpy(buf,buffer2.c_str(),buffer2.size());
 			}
 			msg += buf;
-	                printf("buf is: %s\n", buf);
-			printf("Msg is: %s\n", msg.c_str());
+	                //printf("buf is: %s\n", buf);
+			//printf("Msg is: %s\n", msg.c_str());
 			cur_count += count;
-			extractedMsg = extractMsg(msg);
 		}
 		if (msg_id == 'P' || msg_id == 'p')
 		{
 			std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
-			output.write(extractedMsg.c_str(), length);
+			output.write(msg, length);
 			output.close();
 			printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
 		}
 		else
 		{
-			printf("\n\n%s\n\n", extractMsg(msg));
+			printf("\n\n%s\n\n", msg);
 		}
    }
 
