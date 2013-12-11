@@ -162,13 +162,13 @@ int main(int argc, char *argv[])
 		if (msg_id == 'P' || msg_id == 'p')
 		{
 			std::ofstream output("MARS_ROVER_IMAGE.jpg", std::fstream::binary);
-			output.write(msg, length);
+			output.write(msg.c_str(), length);
 			output.close();
 			printf("Client read image to MARS_ROVER_IMAGE.jpg in the current directory.\n");
 		}
 		else
 		{
-			printf("\n\n%s\n\n", msg);
+			printf("\n\n%s\n\n", msg.c_str());
 		}
    }
 
