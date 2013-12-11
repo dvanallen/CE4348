@@ -23,4 +23,4 @@ D	Sent by client: Requests current direction.			None
 T	Sent by client: Requests air temperature.			None
 	Sent by server: Sends current (random) temperature.		-50 to 50, so 2 or 3 bytes?
 Q	Sent by client: Tells server to quit.				None
-	(Never sent by server)
+	Sent by server: Declares shutdown.				None
